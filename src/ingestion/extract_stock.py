@@ -5,7 +5,8 @@ from zoneinfo import ZoneInfo
 
 import requests
 
-def fetch_stock(ticker):
+
+def fetch_stock(ticker: str) -> dict[str, object]:
     response = requests.get(f'https://brapi.dev/api/v2/stocks/quote?symbols={ticker}', timeout=10)
     response.raise_for_status()
 
@@ -14,13 +15,12 @@ def fetch_stock(ticker):
     return data
 
 
-def build_file_path(ticker):
-    date = datetime.now(ZoneInfo("America/Sao_Paulo"))
-    year = date.year
-    month = date.strftime("%m")
-    day = date.strftime("%d")
+def build_file_path(ticker: str, collected_at: datetime) -> Path:
+    year = collected_at.year
+    month = collected_at.strftime("%m")
+    day = collected_at.strftime("%d")
 
-    name_archive = date.strftime("%Y%m%dT%H%M%S%z") + ".json"
+    name_archive = collected_at.strftime("%Y%m%dT%H%M%S%z") + ".json"
     file_path = (
         Path("data/raw/stocks")
         / ticker
@@ -32,7 +32,7 @@ def build_file_path(ticker):
     return file_path
 
 
-def save_json(data, file_path):
+def save_json(data: dict[str, object], file_path: Path) -> None:
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
 
@@ -41,14 +41,15 @@ def save_json(data, file_path):
 
 
 
-def main ():
+def main () -> None:
     tickers = ["PETR4", "VALE3"]
 
     for ticker in tickers:
 
         try:
             data = fetch_stock(ticker)
-            file_path = build_file_path(ticker)
+            collected_at = datetime.now(ZoneInfo("America/Sao_Paulo"))
+            file_path = build_file_path(ticker, collected_at)
             save_json(data,file_path)
 
             print (f"Arquivo em: {file_path}")
