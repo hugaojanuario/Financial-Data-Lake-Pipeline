@@ -4,6 +4,8 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 from unittest.mock import Mock
 
+import pytest
+import requests
 from pytest import MonkeyPatch
 
 from src.ingestion.extract_stock import build_file_path, save_json, fetch_stock
@@ -70,3 +72,20 @@ def test_fetch_stock_success(monkeypatch: MonkeyPatch):
 
     mock_response.raise_for_status.assert_called_once()
     mock_response.json.assert_called_once()
+
+
+def test_fetch_stock_timeout(monkeypatch: MonkeyPatch):
+    mock_get = Mock(side_effect=requests.exceptions.Timeout)
+
+    monkeypatch.setattr(
+        "src.ingestion.extract_stock.requests.get",
+        mock_get,
+    )
+
+    with pytest.raises(requests.exceptions.Timeout):
+        fetch_stock("PETR4")
+
+    mock_get.assert_called_once_with(
+        "https://brapi.dev/api/v2/stocks/quote?symbols=PETR4",
+        timeout=10,
+    )
