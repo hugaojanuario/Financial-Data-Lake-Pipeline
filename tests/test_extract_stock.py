@@ -89,3 +89,26 @@ def test_fetch_stock_timeout(monkeypatch: MonkeyPatch):
         "https://brapi.dev/api/v2/stocks/quote?symbols=PETR4",
         timeout=10,
     )
+
+
+def test_fetch_stock_http_error(monkeypatch: MonkeyPatch):
+    mock_response = Mock()
+    mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError(
+        "500 Server Error"
+    )
+    mock_get = Mock(return_value=mock_response)
+
+    monkeypatch.setattr(
+        "src.ingestion.extract_stock.requests.get",
+        mock_get,
+    )
+
+    with pytest.raises(requests.exceptions.HTTPError):
+        fetch_stock("PETR4")
+
+    mock_get.assert_called_once_with(
+        "https://brapi.dev/api/v2/stocks/quote?symbols=PETR4",
+        timeout=10,
+    )
+    mock_response.raise_for_status.assert_called_once()
+    mock_response.json.assert_not_called()
