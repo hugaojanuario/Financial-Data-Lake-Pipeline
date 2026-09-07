@@ -8,6 +8,7 @@ import pytest
 import requests
 from pytest import MonkeyPatch
 
+from src.ingestion import extract_stock
 from src.ingestion.extract_stock import build_file_path, save_json, fetch_stock
 
 
@@ -112,3 +113,31 @@ def test_fetch_stock_http_error(monkeypatch: MonkeyPatch):
     )
     mock_response.raise_for_status.assert_called_once()
     mock_response.json.assert_not_called()
+
+
+def test_main_continues_after_timeout(monkeypatch: MonkeyPatch):
+    fetched_tickers: list[str] = []
+
+    def fake_fetch_stock(ticker: str) -> dict[str, object]:
+        fetched_tickers.append(ticker)
+        if ticker == "PETR4":
+            raise requests.exceptions.Timeout
+        return {"ticker": ticker}
+
+    expected_path = Path("data/raw/stocks/VALE3.json")
+    mock_build_file_path = Mock(return_value=expected_path)
+    mock_save_json = Mock()
+
+    monkeypatch.setattr(extract_stock, "fetch_stock", fake_fetch_stock)
+    monkeypatch.setattr(extract_stock, "build_file_path", mock_build_file_path)
+    monkeypatch.setattr(extract_stock, "save_json", mock_save_json)
+
+    extract_stock.main()
+
+    assert fetched_tickers == ["PETR4", "VALE3"]
+    mock_build_file_path.assert_called_once()
+    assert mock_build_file_path.call_args.args[0] == "VALE3"
+    mock_save_json.assert_called_once_with(
+        {"ticker": "VALE3"},
+        expected_path,
+    )
