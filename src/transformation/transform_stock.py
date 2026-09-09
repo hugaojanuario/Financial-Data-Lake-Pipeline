@@ -2,6 +2,11 @@ from typing import Any
 
 
 def transform_stock(raw_data: dict[str, Any]) -> dict[str, Any]:
+    results = raw_data.get("results")
+
+    if not results:
+        raise ValueError("No stock data found")
+
     result = raw_data["results"][0]
     stock = result["data"]
 

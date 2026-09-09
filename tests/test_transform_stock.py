@@ -1,4 +1,5 @@
 from src.transformation.transform_stock import transform_stock
+import pytest
 
 def test_transform_stock():
     # resposta simulada da api para o test:
@@ -44,3 +45,13 @@ def test_transform_stock():
     assert result["change_percent"] == 1.72
     assert result["market_cap"] == 450000000000
     assert result["market_time"] == "2026-09-08T13:40:00.000Z"
+
+def test_transform_stock_with_empty_results():
+    raw_data = {
+        "results": [],
+        "requestedAt": "2026-09-09T12:00:00.000Z",
+    }
+
+    with pytest.raises(ValueError):
+        # O código executado dentro deste bloco precisa gerar ValueError
+        transform_stock(raw_data)
