@@ -219,3 +219,5 @@ __marimo__/
 
 # Dados gerados
 /data/
+.idea/
+/.pytest_tmp/

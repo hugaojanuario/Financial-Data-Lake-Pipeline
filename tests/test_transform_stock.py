@@ -30,7 +30,17 @@ def test_transform_stock():
     result = transform_stock(raw_data)
 
     assert result["ticker"] == "PETR4"
+    assert result["short_name"] == "PETROBRAS PN"
     assert result["price"] == 35.5
-    assert result["currency"] == "BRL"
+    assert result["open_price"] == 35.0
+    assert result["day_high"] == 36.0
+    assert result["day_low"] == 34.8
+    assert result["previous_close"] == 34.9
+    assert result["volume"] == 1000000
     assert result["requested_at"] == "2026-09-08T13:42:28.819Z"
+    assert result["long_name"] == "Petróleo Brasileiro S.A."
+    assert result["currency"] == "BRL"
+    assert result["change"] == 0.6
     assert result["change_percent"] == 1.72
+    assert result["market_cap"] == 450000000000
+    assert result["market_time"] == "2026-09-08T13:40:00.000Z"
